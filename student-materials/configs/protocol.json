@@ -1,0 +1,51 @@
+{
+  "training_seeds": [
+    42,
+    43,
+    44
+  ],
+  "noise_seed_patterns": 2026,
+  "noise_seed_mnist": 2026,
+  "bits": [
+    32,
+    8,
+    4,
+    2
+  ],
+  "scale_modes": [
+    "global",
+    "layer"
+  ],
+  "mnist_noise_percent": 10,
+  "mnist_flip_count": 78,
+  "train_indices": [
+    0,
+    4999
+  ],
+  "validation_indices": [
+    5000,
+    5999
+  ],
+  "test_indices": [
+    0,
+    9999
+  ],
+  "degradation_threshold_percentage_points": 1.0,
+  "noise_takeoff_error_percent": 10,
+  "eta_baseline": 0.01,
+  "eta_candidates": [
+    0.1,
+    0.3
+  ],
+  "epochs": 5,
+  "loss": "0.5 * sum squared output errors; mean over examples",
+  "quantization": "weights only, dequantized float32 inference; biases unchanged",
+  "rounding": "nearest, ties away from zero",
+  "benchmark": {
+    "warmup": 100,
+    "min_batch_ns": 100000000,
+    "max_calls": 16777216,
+    "campaigns": 3,
+    "pairs": 10
+  }
+}

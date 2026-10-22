@@ -1,0 +1,50 @@
+[
+  {
+    "seed": 42,
+    "eta": 0.300000012,
+    "selected_epoch": 5,
+    "train_indices": [
+      0,
+      4999
+    ],
+    "validation_indices": [
+      5000,
+      5999
+    ],
+    "selection": "minimum validation loss; no test-based selection",
+    "format": "INEMMLP1 float32 little-endian",
+    "outputs_tolerance": "1e-5 + 1e-4*abs(reference)"
+  },
+  {
+    "seed": 43,
+    "eta": 0.300000012,
+    "selected_epoch": 5,
+    "train_indices": [
+      0,
+      4999
+    ],
+    "validation_indices": [
+      5000,
+      5999
+    ],
+    "selection": "minimum validation loss; no test-based selection",
+    "format": "INEMMLP1 float32 little-endian",
+    "outputs_tolerance": "1e-5 + 1e-4*abs(reference)"
+  },
+  {
+    "seed": 44,
+    "eta": 0.300000012,
+    "selected_epoch": 5,
+    "train_indices": [
+      0,
+      4999
+    ],
+    "validation_indices": [
+      5000,
+      5999
+    ],
+    "selection": "minimum validation loss; no test-based selection",
+    "format": "INEMMLP1 float32 little-endian",
+    "outputs_tolerance": "1e-5 + 1e-4*abs(reference)"
+  }
+]
