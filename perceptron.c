@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "perceptron.h"
+#include <math.h>
+
+#define NB_ESSAIS 50
 #define MAX_EPOQUES 1000
 
 /* Structure simple pour stocker un motif et son label */
@@ -105,6 +108,99 @@ int traiter_exemple(Perceptron *p, const double x[NB_PIXELS], int d, const char 
 
     return e;
 }
+// Question 4
+/*
+ * Inverse exactement n pixels distincts du motif source vers destination.
+ * Utilise un melange de Fisher-Yates sur les indices 0..47 pour eviter les doublons.
+ */
+void bruiter_motif(const double source[NB_PIXELS], double destination[NB_PIXELS], int n) {
+    /* 1. Copie complete du motif d'origine */
+    for (size_t j = 0; j < NB_PIXELS; ++j) {
+        destination[j] = source[j];
+    }
+
+    if (n <= 0) return;
+
+    /* 2. Tableau des 48 indices disponibles */
+    int indices[NB_PIXELS];
+    for (int i = 0; i < NB_PIXELS; ++i) {
+        indices[i] = i;
+    }
+
+    /* 3. Tirage partiel sans remise de n indices (Fisher-Yates) */
+    for (int i = 0; i < n; ++i) {
+        int r = i + rand() % (NB_PIXELS - i);
+        int temp = indices[i];
+        indices[i] = indices[r];
+        indices[r] = temp;
+
+        /* Inversion du pixel choisi */
+        int idx = indices[i];
+        destination[idx] = (destination[idx] == 0.0) ? 1.0 : 0.0;
+    }
+}
+
+/*
+ * Teste la robustesse au bruit pour les deux chiffres.
+ * Exporte les resultats dans un fichier CSV pour tracer la figure demandee.
+ */
+void tester_robustesse_bruit(const Perceptron *p, 
+                             const double x_zero[NB_PIXELS], 
+                             const double x_un[NB_PIXELS]) {
+    FILE *f_csv = fopen("resultats_bruit_etape1.csv", "w");
+    if (f_csv == NULL) {
+        fprintf(stderr, "Erreur : creation du fichier CSV impossible.\n");
+        return;
+    }
+
+    /* En-tete du CSV pour tracer les courbes demandees */
+    fprintf(f_csv, "bruit_pct,nb_pixels_inverses,taux_erreur_zero,taux_erreur_un,taux_erreur_total\n");
+
+    printf("\n=== Evaluation de la robustesse au bruit (50 essais par chiffre) ===\n");
+    printf("Bruit (%%) | Pixels inverses | Erreur '0' (%%) | Erreur '1' (%%) | Erreur Totale (%%)\n");
+    printf("----------------------------------------------------------------------------\n");
+
+    double x_bruite[NB_PIXELS];
+
+    for (int pct = 0; pct <= 100; pct += 10) {
+        /* Arrondi exact de (48 * p / 100) */
+        int n_inverses = (int)round(48.0 * (double)pct / 100.0);
+
+        int erreurs_zero = 0;
+        int erreurs_un = 0;
+
+        /* 50 copies du chiffre 0 */
+        for (int essai = 0; essai < NB_ESSAIS; ++essai) {
+            bruiter_motif(x_zero, x_bruite, n_inverses);
+            double a = calcul_score(p, x_bruite);
+            if (decision(a) != 0) {
+                erreurs_zero++;
+            }
+        }
+
+        /* 50 copies du chiffre 1 */
+        for (int essai = 0; essai < NB_ESSAIS; ++essai) {
+            bruiter_motif(x_un, x_bruite, n_inverses);
+            double a = calcul_score(p, x_bruite);
+            if (decision(a) != 1) {
+                erreurs_un++;
+            }
+        }
+
+        double taux_zero = (100.0 * erreurs_zero) / NB_ESSAIS;
+        double taux_un = (100.0 * erreurs_un) / NB_ESSAIS;
+        double taux_total = (100.0 * (erreurs_zero + erreurs_un)) / (2 * NB_ESSAIS);
+
+        printf("  %3d %%    |       %2d        |    %5.1f %%    |    %5.1f %%    |     %5.1f %%\n",
+               pct, n_inverses, taux_zero, taux_un, taux_total);
+
+        fprintf(f_csv, "%d,%d,%.2f,%.2f,%.2f\n",
+                pct, n_inverses, taux_zero, taux_un, taux_total);
+    }
+
+    fclose(f_csv);
+    printf("\nResultats sauvegardes dans 'resultats_bruit_etape1.csv'.\n");
+}
 
 int main(void) {
     Perceptron p;
@@ -197,6 +293,8 @@ int main(void) {
         printf("- Motif %s (cible %d) : score a = %7.4f -> classe predite = %d\n",
                base[i].nom, base[i].d, a, y_chapeau);
     }
+    /* A la fin du main(), une fois les poids appris et convergés : */
+    tester_robustesse_bruit(&p, base[0].x, base[1].x);
 
     return EXIT_SUCCESS;
 }
